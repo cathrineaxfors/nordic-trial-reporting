@@ -18,6 +18,10 @@
 # as well as EUCTR web scrapers for protocols and results sections shared
 # by the EU Trials Tracker team on request.
 
+# OBS! To replicate the Nordic trials project, you must use the same folder structure as
+# shown here on our GitHub. Download the EUCTR data folders from Zenodo 
+# (https://zenodo.org/records/10091147) and save in the 'raw data' folder. Unzip the files.
+
 # Output: creates xlsx file of trials to be manually verified for institution eligibility.
 
 
