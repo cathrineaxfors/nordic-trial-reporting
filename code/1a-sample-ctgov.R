@@ -16,6 +16,8 @@
 # Note that you first need to download the AACT dataset (size several GB),
 # from https://aact.ctti-clinicaltrials.org/pipe_files (for new projects)
 # Note also that you need to use the same folder structure as in the Nordic trials project (as on GitHub)
+# OBS! To replicate the Nordic trials project, download the AACT data folder from Zenodo 
+# (https://zenodo.org/records/10091147) and save in the 'raw data' folder.
 
 # Output: creates R data file to be combined with EUCTR trials using script 1b,
 # containing relevant trials from AACT (institution, years, status, completion date, descriptive data).
