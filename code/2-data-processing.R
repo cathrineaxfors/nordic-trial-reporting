@@ -21,12 +21,12 @@ library(lubridate)
 
 # Hard code preparations ----
 
-today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-09)
+today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-28)
 
 
 ## Folder path ----
 #Enter here the path to the folder where you saved the "data" and "code" folders (see our GitHub)
-folder_path <- "C:/Users/catax386/Documents/Forskning/Egna studier/Postdoc METRICS/clinical trials dashboard/final-share/"
+folder_path <- ""
 
 
 ## Load data ----
@@ -36,7 +36,7 @@ load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-
 nordic_all <- final_trial_sample
 
 #Publication information
-load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-07.rda"))
+load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27.rda"))
 
 #Full dataset from CTgov
 load(paste0(folder_path, "data/1-sample-generation/output-data/", "clintrialsnord_CTgov_full-2023-11-09.rda"))
@@ -637,21 +637,15 @@ nordic_all$primary_completion_year <- as.character(year(as_date(nordic_all$prima
 #Character variable denoting year
 
 
-#is_prospective
-#Whether trial was prospectively registered. Derived from `registration_date` and `start_date`. Trial is considered prospectively registered if registered in the same month or previous month to start date.
-nordic_all <- mutate(nordic_all, is_prospective = case_when(
-  (floor_date(as_date(registration_date), unit = "month") <=
-     floor_date(as_date(start_date), unit = "month")) == T ~ "Yes",
-  (floor_date(as_date(registration_date), unit = "month") <=
-     floor_date(as_date(start_date), unit = "month")) == F ~ "No"
-))
-#Levels: No, Yes
+#completion_date_type (completion date actual or anticipated)
+nordic_all <- left_join(nordic_all, select(ctgov, nct_id, completion_date_type),
+                        by = c("main_id" = "nct_id"))
 
 
 # Save analysis dataset ---
 colnames(nordic_all)
 
-vars <- c("main_id", "proj_id", "eligibility", "eudract_id", "nct_id", "crossregistration_check", "registry", "trial_title", "trial_name", "lead_institution", "lead_country", "has_publication", "publication_doi", "publication_pmid", "publication_url", "publication_date", "identification_step", "publication_type", "is_prospective", "has_summary_results", "summary_results_date", "registration_date", "start_date", "completion_date", "completion_year", "primary_completion_date", "primary_completion_year", "days_cd_to_publication", "days_pcd_to_publication", "days_cd_to_summary", "days_pcd_to_summary", "days_reg_to_start", "days_reg_to_cd", "days_reg_to_pcd", "days_reg_to_publication", "recruitment_status", "phase", "enrollment", "is_multicentric", "is_multinational", "main_sponsor", "is_controlled", "is_randomised", "masking", "intervention_type", "center_size", "single_sponsor")
+vars <- c("main_id", "proj_id", "eligibility", "eudract_id", "nct_id", "crossregistration_check", "registry", "trial_title", "trial_name", "lead_institution", "lead_country", "has_publication", "publication_doi", "publication_pmid", "publication_url", "publication_date", "identification_step", "extraction_date_latest", "publication_type", "has_summary_results", "summary_results_date", "registration_date", "start_date", "completion_date", "completion_year", "primary_completion_date", "primary_completion_year", "days_cd_to_publication", "days_pcd_to_publication", "days_cd_to_summary", "days_pcd_to_summary", "days_reg_to_start", "days_reg_to_cd", "days_reg_to_pcd", "days_reg_to_publication", "recruitment_status", "phase", "enrollment", "is_multicentric", "is_multinational", "main_sponsor", "is_controlled", "is_randomised", "masking", "intervention_type", "center_size", "single_sponsor", "completion_date_type")
 
 analysis <- select(nordic_all, any_of(vars))
 analysis <- filter(analysis, eligibility == "Eligible")
