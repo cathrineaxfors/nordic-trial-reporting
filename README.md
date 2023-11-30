@@ -23,7 +23,7 @@ CREATED DATABASE
 
 Our database of results publications for the trial sample, to be used for further curation and research, can be found in the folder 4-created-database together with a variable description. For a full methods description, see our protocol (https://osf.io/97qkv/) together with the amendments to the protocol in the appendix of our preprint (TBD).  
 NOTE: 
--Two independent reviewers completed publications searches for each trial.
--The file contains the results of the search forms that the reviewers filled out (form_id starting with F followed by a number, e.g., F1, F5977). Since some search forms were deleted as ineligible, the numbering is not consecutive. It also contains the final decisions for inclusion in the original study, i.e., the earliest results publication after solving discrepancies between reviewers (form_id starting with Final followed by a number, i.e., Final1 to Final2113, with consecutive numbering).
--Only for the earliest results publications for each article have we solved discrepancies between the two independent reviewers. All other articles remain POTENTIALLY eligible as results publications.
--We did not assess whether publications reported on the trial registrations' primary outcomes.
+- Two independent reviewers completed publications searches for each trial.
+- The file contains the results of the search forms that the reviewers filled out (form_id starting with F followed by a number, e.g., F1, F5977). Since some search forms were deleted as ineligible, the numbering is not consecutive. It also contains the final decisions for inclusion in the original study, i.e., the earliest results publication after solving discrepancies between reviewers (form_id starting with Final followed by a number, i.e., Final1 to Final2113, with consecutive numbering).
+- Only for the earliest results publications for each article have we solved discrepancies between the two independent reviewers. All other articles remain POTENTIALLY eligible as results publications.
+- We did not assess whether publications reported on the trial registrations' primary outcomes.
