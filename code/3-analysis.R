@@ -28,7 +28,7 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(lubridate)
-library(KMsurv) #for Kaplan-Meier curve
+library(ggsurvfit)
 library(ggplot2)
 library(RColorBrewer)
 #libraries purrr, tibble, scales, readxl, writexl, readr are also used
@@ -36,24 +36,24 @@ library(RColorBrewer)
 
 # Hard code preparations ----
 
-today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-09)
+today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-28)
 
 
 ## Folder path ----
 #Enter here the path to the folder where you saved the "data" and "code" folders (see our GitHub)
-folder_path <- "C:/Users/catax386/Documents/Forskning/Egna studier/Postdoc METRICS/clinical trials dashboard/final-share/"
+folder_path <- ""
 
 
 ## Load data ----
 
 #Analysis set
-load(paste0(folder_path, "data/2-data-processing/output-data/", "analysis-2023-11-09.rda"))
+load(paste0(folder_path, "data/2-data-processing/output-data/", "analysis-2023-11-28.rda"))
 
 #Trial sample
 load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-09.rda"))
 
 #Publication data
-load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-07.rda"))
+load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27.rda"))
 
 
 
@@ -76,128 +76,73 @@ summary(as.factor(final_trial_sample$eligibility))
 
 # 2. Demographics table ----
 
-demographics <- function(categories, trial_num)
-{
-  demographics_tab <- cbind(categories, 100*round(categories/trial_num, 3))
-  colnames(demographics_tab) <- c("Trials", "Percentage")
-  return(demographics_tab)
-}
+## Recode variables for Table 1 ----
 
+analysis <- mutate(analysis, registered_euctr = ifelse(!is.na(eudract_id), "Yes", "No"))
+analysis <- mutate(analysis, registered_ctgov = ifelse(!is.na(nct_id), "Yes", "No"))
 
-demographics_table <- list()
-trial_num <- dim(analysis)[1]
-
-
-#Number of included trials
-demographics_table[["Total"]] <- demographics(trial_num, trial_num)
-
-#Registry
-registered_euctr <- table(!is.na(analysis$eudract_id))
-demographics_table[["Registered in EUCTR"]] <- demographics(registered_euctr, trial_num)
-
-registered_ctgov <- table(!is.na(analysis$nct_id))
-demographics_table[["Registered at ClinicalTrials.gov"]] <- demographics(registered_ctgov, trial_num)
-
-
-#Type of intervention
 analysis$intervention_type <- recode(analysis$intervention_type, "Medicinal product (EUCTR)" = "Medicinal product")
-interventions <- table(analysis$intervention_type, useNA = "ifany")
-demographics_table[["Intervention"]] <- demographics(interventions, trial_num)
 
+analysis <- mutate(analysis, masking = ifelse(masking == "Yes", "Masking", "Open label"))
 
-#RCTs 
-rct = table(analysis$is_randomised == "Yes" & analysis$is_controlled == "Yes")
-demographics_table[["Randomized controlled trial"]] <- demographics(rct, trial_num)
+analysis$sponsor_type <- analysis$main_sponsor
 
+#Combine different phase descriptions for EUCTR and CTgov
+analysis <- mutate(analysis, phase_recoded = case_when(
+  phase == "Early Phase 1" | phase == "1" | phase == "Phase 1" ~ "I",
+  phase == "Phase 1/Phase 2" ~ "I-II",
+  phase == "2" | phase == "Phase 2" ~ "II",
+  phase == "Phase 2/Phase 3" ~ "II-III",
+  phase == "3" | phase == "Phase 3" ~ "III",
+  phase == "4" | phase == "Phase 4" ~ "IV",
+  phase == "0" | phase == "Not Applicable" ~ "Not given"))
 
-#Masking
-open_label = table(analysis$masking=="No")
-demographics_table[["Open label"]] <- demographics(open_label, trial_num)
+analysis <- mutate(analysis, sample_size = case_when(
+  enrollment > 0 & enrollment <= 100 ~ "1-100",
+  enrollment > 100 & enrollment <= 500 ~ "100-500",
+  enrollment > 500 ~ ">500"
+))
 
-
-#Lead sponsor
-lead_sponsor <- table(analysis$main_sponsor, useNA = "ifany")
-demographics_table[["lead_sponsor"]] <- demographics(lead_sponsor, trial_num)
-
-
-#study phase
-#different ways of writing and defining the phases for CTgov and DRKS have to be combined
-phase <- c("I" = sum(analysis$phase %in% c("Early Phase 1", "1", "Phase 1")),
-           "I-II" = sum(analysis$phase %in% c("Phase 1/Phase 2")),
-           "II" = sum(analysis$phase %in% c("2", "Phase 2")),
-           "II-III" = sum(analysis$phase %in% c("Phase 2/Phase 3")),
-           "III" = sum(analysis$phase %in% c("3", "Phase 3")),
-           "IV" = sum(analysis$phase %in% c("4", "Phase 4")),
-           "Not given" = sum(analysis$phase %in% c("0", "Not Applicable")))
-
-demographics_table[["phase"]] <- demographics(phase, trial_num)
-
-
-#mono-/multicentric
-mono_multicentric <- c("Multicentric" = sum(analysis$is_multicentric == "Yes"),
-                       "Monocentric" = sum(analysis$is_multicentric == "No"))
-demographics_table[["Mono_Multicentric"]] <- demographics(mono_multicentric, trial_num)
-
-
-#number of participants per study
-sample_size <- c("1 - 100" = sum(analysis$enrollment > 0 & analysis$enrollment <= 100, na.rm = TRUE),
-                 "100 - 500" = sum(analysis$enrollment > 100 & analysis$enrollment <= 500, na.rm = TRUE),
-                 "> 500" = sum(analysis$enrollment > 500, na.rm = TRUE),
-                 "Not given" = sum(is.na(analysis$enrollment)))
-
-demographics_table[["Sample_size"]] <- demographics(sample_size, trial_num)
-
-
-#time of registration
-#prospective registration is counted if the study was registered in the month of the study start or earlier
-analysis$start_date <- as_date(analysis$start_date)
-
+#Time to registration: this variable will be analyzed under secondary outcomes (not here)
 analysis <- mutate_at(analysis, vars(start_date, registration_date, completion_date), ~as_date(.))
+analysis <- mutate(analysis, time_to_registration = case_when(
+  registration_date < start_date ~ "Prospective registration",
+  registration_date < start_date + days(61) ~ "Within 60 days after trial start",
+  registration_date > start_date + days(60) ~ ">60 days after trial start"
+))
 
-time_to_registration <- c("prospective registration" = 
-                            sum((analysis$start_date %>% floor_date(unit = "month")) >= 
-                                  (analysis$registration_date %>% floor_date(unit = "month")), na.rm = TRUE),
-                          "after trial start" = 
-                            sum((analysis$start_date %>% floor_date(unit = "month")) <
-                                  (analysis$registration_date %>% floor_date(unit = "month")), na.rm = TRUE),
-                          "after trial completion" = sum(analysis$days_reg_to_cd < 0, na.rm = TRUE),
-                          "after publication" = sum(analysis$days_reg_to_publication < 0, na.rm = TRUE),
-                          "start date not given" = sum(is.na(analysis$start_date)))
+analysis <- mutate(analysis, recruitment_status_recoded = case_when(
+  grepl("^Completed$|Any Completed, none Prematurely Ended", recruitment_status) ~ "Completed",
+  grepl("^Terminated$|Any Prematurely Ended", recruitment_status) ~ "Terminated",
+  grepl("Unknown status", recruitment_status) ~ recruitment_status
+))
 
-demographics_table[["time_to_registration"]] <- demographics(time_to_registration, trial_num)
-
-
-#trial end (CD)
-trial_end_CD <- table(year(as_date(analysis$completion_date)))
-
-demographics_table[["trial_end_CD"]] <- demographics(trial_end_CD, trial_num)
+analysis <- mutate(analysis, is_rct = ifelse(is_randomised=="Yes"&is_controlled=="Yes", "Yes", "No"))
 
 
-#recruitment status
-recruitment_status <- c("Completed" = sum(analysis$recruitment_status %in% c("Completed", "Any Completed, none Prematurely Ended"), na.rm = TRUE),
-                        "Terminated" = sum(analysis$recruitment_status %in% c("Terminated", "Any Prematurely Ended"), na.rm = TRUE),
-                        "Unknown status" = sum(analysis$recruitment_status == "Unknown status", na.rm = TRUE))
+### Create and save table ----
+demo_table_save <- furniture::table1(analysis, lead_country, registered_euctr, registered_ctgov,intervention_type, 
+                  is_rct, masking, sponsor_type, phase_recoded, is_multicentric, sample_size,
+                  completion_year, recruitment_status_recoded,
+                  na.rm = F)
+#To export this file to csv, add export = "file name" and it's saved in a new folder called "table1" in the
+#working directory (you'll need to define the working directory first).
+#You can also just copy the table content from the console into a word file.
 
-demographics_table[["recruitment_status"]] <- demographics(recruitment_status, trial_num)
+#save(demo_table_save, file = paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-", 
+#                             today, ".rData"))
 
-#country
-countries <- table(analysis$lead_country, useNA = "ifany")
-demographics_table[["lead_country"]] <- demographics(countries, trial_num)
+### Create and save table (per registry) ----
+demo_table_reg_save <- furniture::table1(analysis, lead_country, registered_euctr, registered_ctgov,intervention_type, 
+                                     is_rct, masking, sponsor_type, phase_recoded, is_multicentric, sample_size,
+                                     completion_year, recruitment_status_recoded,
+                                     na.rm = F, splitby = "registered_euctr")
+#To export this file to csv, add export = "file name" and it's saved in a new folder called "table1" in the
+#working directory (you'll need to define the working directory first).
+#You can also just copy the table content from the console into a word file.
 
-#print table
-
-print(demographics_table)
-
-demo_table_save <- do.call(rbind, demographics_table)
-demo_table_save <- tibble(category = rownames(demo_table_save),
-                          Trials = demo_table_save[,1],
-                          Percentage = demo_table_save[,2] %>% round(2)) 
-
-
-## Save table ----
-writexl::write_xlsx(demo_table_save, paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-", today, ".xlsx"))
-readr::write_csv(demo_table_save, paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-", today, ".csv"))
-
+#save(demo_table_reg_save, file = paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-registry-", 
+#                             today, ".rData"))
 
 
 # 3. Timely publication 2 years ----
@@ -288,8 +233,8 @@ institution_statistics_lead_2y[nrow(institution_statistics_lead_2y) + 1,] <- lis
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
 ## Save table ----
-writexl::write_xlsx(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".xlsx"))
-readr::write_csv(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".csv"))
+#writexl::write_xlsx(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".xlsx"))
+#readr::write_csv(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".csv"))
 
 
 ## Figure ----
@@ -322,9 +267,9 @@ fig <- ggplot(institution_statistics_lead_2y_fig, aes(
 
 ### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7)
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7)
 plot(fig)
-dev.off()
+#dev.off()
 
 
 
@@ -395,8 +340,8 @@ institution_statistics_summary_1y[nrow(institution_statistics_summary_1y) + 1,] 
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
 ## Save table ----
-writexl::write_xlsx(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".xlsx"))
-readr::write_csv(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".csv"))
+#writexl::write_xlsx(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".xlsx"))
+#readr::write_csv(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".csv"))
 
 
 ## Figure ----
@@ -429,9 +374,9 @@ fig <- ggplot(institution_statistics_summary_1y_fig, aes(
 
 ### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-summary-1yr-", today, ".pdf"), height = 7, width = 7)
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-summary-1yr-", today, ".pdf"), height = 7, width = 7)
 plot(fig)
-dev.off()
+#dev.off()
 
 
 ## In-text results (console only) ----
@@ -511,8 +456,8 @@ institution_statistics_any_results[nrow(institution_statistics_any_results) + 1,
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
 ## Save table ----
-writexl::write_xlsx(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".xlsx"))
-readr::write_csv(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".csv"))
+#writexl::write_xlsx(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".xlsx"))
+#readr::write_csv(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".csv"))
 
 
 ## Figure ----
@@ -545,9 +490,9 @@ fig <- ggplot(institution_statistics_any_results_fig, aes(
 
 ### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7)
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7)
 plot(fig)
-dev.off()
+#dev.off()
 
 
 
@@ -558,99 +503,79 @@ dev.off()
 ## Kaplan-Meier plot ----
 
 #get minimum of days to pub or to summary result & time in days that one study could be tracked
-analysis_KM_data <- analysis_dataset_institutions %>%
-  mutate(days_obs = as.numeric(dmy("23.03.2023") - completion_date))
+analysis_KM_data <- analysis_dataset_institutions
+analysis_KM_data <- mutate(analysis_KM_data, days_to_publ = ifelse(days_to_publ <= 0, 1, days_to_publ))
 
-#sort the studies according to completion years for Kaplan-Meier curve
-compl_years <- analysis_KM_data$completion_date %>% str_sub(1, 4)
-subsets_KM_plot <- list("Total" = rep(TRUE, dim(analysis_KM_data)[1]) ,
-                        "2016" = compl_years == "2016",
-                        "2017" = compl_years == "2017",
-                        "2018" = compl_years == "2018",
-                        "2019" = compl_years == "2019")
-
-#define the year range and create corresponding day vector
-year_range <- 1:6
-days <- 1:(365*last(year_range))
+analysis_KM_data <- mutate(analysis_KM_data, months_obs = case_when(
+  has_publ_or_summary == T ~ days_to_publ/365.25*12,
+  has_publ_or_summary == F ~ as.duration(completion_date %--% extraction_date_latest) / dmonths(1)))
 
 
-#function that summarizes the publication and censoring (= publications could not be tracked longer) events
-#for one subgroup and uses the lifetab function from the KMsurv package to calculate the KM curve
-get_KM_curve <- function(subset, days, days_to_publ, days_to_cens)
-{
-  #only take certain subset of data, e.g. different completion years
-  days_to_publ <- days_to_publ[subset]
-  days_to_cens <- days_to_cens[subset]
-  
-  #for the publications before study end set time to publ to 1 day
-  days_to_publ[which(days_to_publ <= 0)] <- 1
-  #if the publication takes longer than the time interval we look at,
-  #set it to no publ
-  days_to_publ[days_to_publ > last(days)] <- NA
-  
-  #if the census time is longer than the total time interval we look at,
-  #set the last day of the time interval as cens day
-  days_to_cens[days_to_cens > last(days)] <- last(days)
-  
-  #is study either censored (= no publ found) or published first
-  event_or_cens <- ifelse(!is.na(days_to_publ), 1, 0)
-  
-  #count the publication events for each day
-  pub_counts <- rep(0, length(days))
-  interval_counts <- days_to_publ[days_to_publ %in% days]
-  interval_counts <- table(interval_counts)
-  pub_counts[as.integer(names(interval_counts))] <- interval_counts
-  
-  #count the censoring events for each day
-  cens_counts <- rep(0, length(days))
-  cens_interval_counts <- days_to_cens[days_to_cens %in% days & is.na(days_to_publ)]
-  cens_interval_counts <- table(cens_interval_counts)
-  cens_counts[as.integer(names(cens_interval_counts))] <- cens_interval_counts
-  
-  #use the lifetab function from the KMsurv package to calculate the Kaplan-Meier curve
-  KL_curve <- lifetab(c(0,days), length(days_to_publ), cens_counts, pub_counts)
-  
-  return(KL_curve$surv)
-}
+#Create survival object and fit curve    
+KM_curve <- survival::survfit(survival::Surv(months_obs, has_publ_or_summary) ~ 1, data = analysis_KM_data)
 
-#calculate cumulative distributions for subsets and make data tidy for plotting with ggplot2
-cum_dist_years <- sapply(subsets_KM_plot, get_KM_curve, days, analysis_KM_data$days_to_publ, analysis_KM_data$days_obs) %>%
-  as_tibble() %>%
-  tibble::add_column(days) %>%
-  mutate(months = time_length(days(days), unit="months")) %>%
-  tail(-1) #delete first datapoint as percentage starts at 1 (which we don't want, as some publ. can be found before day 1)
+#Plot curve
+xbreaks <- c(12, 24, 36, 48, 60, 72, 84)
+xlabels <- as.character(xbreaks)
 
-#make data tidy for plotting with ggplot2
-cum_dist_years <- cum_dist_years %>%
-  gather(colnames(cum_dist_years) %>% head(-2) , key = "category", value = "fraction")
+ybreaks <- c(0, 0.20, 0.40, 0.60, 0.80, 1)
+ylabels <- paste0(ybreaks*100, ("%"))
 
+KM_curve_total <- survfit2(survival::Surv(months_obs, has_publ_or_summary) ~ 1, data = analysis_KM_data) %>% 
+  ggsurvfit(linewidth = 0.8) +
+  labs(
+    x = "Months",
+    y = "Unpublished studies (%)"
+  ) + 
+  add_confidence_interval() +
+  scale_x_continuous(
+    breaks = xbreaks,
+    labels = xlabels,
+    limits = c(1, 88),
+    expand = c(0,0)) +
+  scale_y_continuous(
+    breaks = ybreaks,
+    labels = ylabels,
+    limits = c(0,1.01),
+    expand = c(0,0)
+    )+
+  coord_cartesian(xlim = c(1, 86))+
+  geom_vline(xintercept = 24, color = "gray", linetype = "dashed")  # Vertical line at x = 24
 
-#Note: The above code (from the IntoValue project) stratifies by completion year. In this
-#project, we instead only look at the total:
-cum_dist_years_total <- filter(cum_dist_years, category == "Total")
-
-### Figure: Kaplan-Meier curve ----
-
-ggplot(cum_dist_years_total, aes(x = months, y = fraction, color = category)) +
-  geom_step(size = 1) + #, color = "#C02942") +
-  theme_minimal() +
-  xlab("Months") + ylab("Unpublished studies (%)") +
-  scale_color_brewer(name = "Completion\nYear" , palette = 'Dark2') +
-  theme(text = element_text(size=18),
-        axis.text.x = element_text(size=18),
-        axis.text.y = element_text(size=18)) +
-  scale_x_continuous(name = "Months", breaks=c(0, year_range)*12,
-                     labels = paste0(c(0, year_range)*12, "")) +
-  scale_y_continuous(labels = scales::percent,
-                     limits = c(0,1)) +
-  theme(axis.line = element_line(size = 0.5, linetype = "solid",
-                                 colour = "black"),
-        legend.position = "none")
 
 ### Save figure ----
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-", today, ".pdf"), height = 4, width = 5)
+plot(KM_curve_total)
+#dev.off()
 
-ggsave(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-", today, ".pdf"), width = 18, height = 15, units = "cm", dpi = 300)
 
+### Per country ----
+KM_curve_country <- survfit2(survival::Surv(months_obs, has_publ_or_summary) ~ lead_country, data = analysis_KM_data) %>% 
+  ggsurvfit(linewidth = 0.8) +
+  labs(
+    x = "Months",
+    y = "Unpublished studies (%)"
+  ) + 
+  scale_color_manual(values = c(brewer.pal(5, "Set1")[-6], "Black"))+
+  scale_x_continuous(
+    breaks = xbreaks,
+    labels = xlabels,
+#    limits = c(1, 88),
+    expand = c(0,0)) +
+  scale_y_continuous(
+    breaks = ybreaks,
+    labels = ylabels,
+    limits = c(0,1.01),
+    expand = c(0,0)
+  )+
+#  coord_cartesian(xlim = c(1, 86))+
+  geom_vline(xintercept = 24, color = "gray", linetype = "dashed")  # Vertical line at x = 24
+
+
+#### Save figure ----
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-country-", today, ".pdf"), height = 4, width = 5.5)
+plot(KM_curve_country)
+#dev.off()
 
 
 ## Median time to reporting ----
@@ -659,25 +584,25 @@ ggsave(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-me
 
 #for given institution calculate median time to results reporting and iqr
 
-get_time_reporting <- function(institution, days_to_publ)
+get_time_reporting <- function(institution)
 {
-  institution_trials <- filter(analysis_dataset_institutions,
+  institutions_KM_data <- filter(analysis_KM_data,
     (lead_institution == institution |
        str_detect(lead_institution, paste0(";",institution, "$")) |
        str_detect(lead_institution, paste0("^", institution, ";"))))
-  institution_tot <- sum(!is.na(institution_trials$days_to_publ))
-  institution_median <- round(median(institution_trials$days_to_publ, na.rm = T), digits=0)
-  institution_iqr <- round(IQR(institution_trials$days_to_publ, na.rm = T), digits=0)
+  KM_curve_institution <- survival::survfit(survival::Surv(institutions_KM_data$months_obs, institutions_KM_data$has_publ_or_summary) ~ 1)
+  institution_median <- unname(summary(KM_curve_institution)$table['median'])/12*365.25
+  institution_iqr <- unname(quantile(KM_curve_institution)[[1]][3] - quantile(KM_curve_institution)[[1]][1])/12*365.25
 
-  institution_stat <- tibble("institution" = institution, "trials" = institution_tot,
+  institution_stat <- tibble("institution" = institution,
                              "median" = institution_median,
                              "iqr" = institution_iqr)
   return(institution_stat)
 }
 
+
 ## Main table for median reporting times ----
-institution_median_reporting <- purrr::map(institutions, get_time_reporting,
-                                                days_to_publ = analysis_dataset_institutions$days_to_publ)
+institution_median_reporting <- purrr::map(institutions, get_time_reporting)
 institution_median_reporting <- do.call(rbind, institution_median_reporting)
 
 print(institution_median_reporting, n = Inf)
@@ -686,21 +611,21 @@ print(institution_median_reporting, n = Inf)
 
 country_names <- c("Denmark", "Finland", "Iceland", "Norway", "Sweden")
 
-get_country_time_reporting <- function(country_names, days_to_publ)
+get_country_time_reporting <- function(country_names)
 {
-  country_trials <- filter(analysis_dataset_institutions, lead_country == country_names)
-  country_tot <- sum(!is.na(country_trials$days_to_publ))
-  country_median <- round(median(country_trials$days_to_publ, na.rm = T), digits=0)
-  country_iqr <- round(IQR(country_trials$days_to_publ, na.rm = T), digits=0)
+  country_KM_data <- filter(analysis_KM_data, lead_country == country_names)
+  KM_curve_country <- survival::survfit(survival::Surv(country_KM_data$months_obs, country_KM_data$has_publ_or_summary) ~ 1)
+  country_median <- unname(summary(KM_curve_country)$table['median'])/12*365.25
+  country_iqr <- unname(quantile(KM_curve_country)[[1]][3] - quantile(KM_curve_country)[[1]][1])/12*365.25
   
-  country_stat <- tibble("institution" = country_names, "trials" = country_tot,
+  country_stat <- tibble("institution" = country_names,
                              "median" = country_median,
                              "iqr" = country_iqr)
+  
   return(country_stat)
 }
 
-country_median_reporting <- purrr::map(country_names, get_country_time_reporting,
-                                       days_to_publ = analysis_dataset_institutions$days_to_publ)
+country_median_reporting <- purrr::map(country_names, get_country_time_reporting)
 country_median_reporting <- do.call(rbind, country_median_reporting)
 
 print(country_median_reporting, n = Inf)
@@ -708,34 +633,22 @@ print(country_median_reporting, n = Inf)
 institution_median_reporting <- rbind(institution_median_reporting, country_median_reporting)
 
 ### Add total ----
-add1 <- sum(!is.na(analysis_dataset_institutions$days_to_publ))
-add2 <- round(median(analysis_dataset_institutions$days_to_publ, na.rm = T), digits=0)
-add3 <- round(IQR(analysis_dataset_institutions$days_to_publ, na.rm = T), digits=0)
+add1 <- unname(summary(KM_curve)$table['median'])/12*365.25
+add2 <- unname(quantile(KM_curve)[[1]][3] - quantile(KM_curve)[[1]][1])/12*365.25
 
-institution_median_reporting[nrow(institution_median_reporting) + 1,] <- list("Total", add1, add2, add3)
-rm(add1, add2, add3)
+institution_median_reporting[nrow(institution_median_reporting) + 1,] <- list("Total", add1, add2)
+rm(add1, add2)
 
 ## Save table ----
-writexl::write_xlsx(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".xlsx"))
-readr::write_csv(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".csv"))
+#writexl::write_xlsx(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".xlsx"))
+#readr::write_csv(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".csv"))
 
 
 ## Additional calculations (console only) ----
 
 # Number of trials with any results reporting before completion date
 sum(analysis_dataset_institutions$days_to_publ<0, na.rm = T)
-sum(analysis_dataset_institutions$days_to_publ<0, na.rm = T)/sum(!is.na(analysis_dataset_institutions$days_to_publ), na.rm=T)
-
-# Time to reporting, publications only
-sum(!is.na(analysis_dataset_institutions$days_cd_to_publication))
-round(median(analysis_dataset_institutions$days_cd_to_publication, na.rm = T), digits=0)
-round(IQR(analysis_dataset_institutions$days_cd_to_publication, na.rm = T), digits=0)
-
-# Time to reporting, summary results only
-sum(!is.na(analysis_dataset_institutions$days_cd_to_summary))
-round(median(analysis_dataset_institutions$days_cd_to_summary, na.rm = T), digits=0)
-round(IQR(analysis_dataset_institutions$days_cd_to_summary, na.rm = T), digits=0)
-
+sum(analysis_dataset_institutions$days_to_publ<0, na.rm = T)/2113
 
 
 # 7. Secondary outcomes ----
@@ -758,7 +671,14 @@ summary(analysis_results$enrollment)
 IQR(analysis_results$enrollment, na.rm = T)
 sum(analysis_results$enrollment, na.rm = T)
 
-## Prospectively registered trials ----
+## Prospectively registered trials ---- 
+
+#Use trials only registered at ClinicalTrials.gov
+analysis_dataset_institutions_ctgov <- filter(analysis_dataset_institutions, registered_euctr == "No")
+
+#In-text results (console only)
+furniture::table1(analysis_dataset_institutions_ctgov, time_to_registration,
+                  na.rm = F)
 
 #for given institution calculate number of trials, prospectively reported trials,
 #and percentage
@@ -774,7 +694,7 @@ get_prospective_statistics <- function(institution, institution_assignments, sta
     (institution_assignments == institution |
        str_detect(institution_assignments, paste0(";",institution, "$")) |
        str_detect(institution_assignments, paste0("^", institution, ";"))) &
-     floor_date(start_date, unit = "month") >= floor_date(registration_date, unit = "month"), 
+     start_date > registration_date, 
      na.rm = TRUE)
   institution_perc <- round(institution_prospective/institution_tot, 3) * 100
   institution_wilson <- DescTools::BinomCI(institution_prospective, institution_tot, 
@@ -805,20 +725,20 @@ get_prospective_statistics <- function(institution, institution_assignments, sta
   return(institution_stat)
 }
 
-## Main table for prospective registration ----
+### Main table for prospective registration ----
 institution_statistics_prospective <- purrr::map(institutions, get_prospective_statistics,
-                                                institution_assignments = analysis_dataset_institutions$lead_institution,
-                                                start_date = analysis_dataset_institutions$start_date,
-                                                registration_date = analysis_dataset_institutions$registration_date)
+                                                institution_assignments = analysis_dataset_institutions_ctgov$lead_institution,
+                                                start_date = analysis_dataset_institutions_ctgov$start_date,
+                                                registration_date = analysis_dataset_institutions_ctgov$registration_date)
 institution_statistics_prospective <- do.call(rbind, institution_statistics_prospective)
 
 print(institution_statistics_prospective, n = Inf)
 institution_statistics_prospective$percentage <- institution_statistics_prospective$percentage %>% round(2)
 
-### Add total ----
-add1 <- nrow(analysis_dataset_institutions)
-add2 <- sum(floor_date(analysis_dataset_institutions$start_date, unit = "month") >= 
-              floor_date(analysis_dataset_institutions$registration_date, unit = "month"),
+#### Add total ----
+add1 <- nrow(analysis_dataset_institutions_ctgov)
+add2 <- sum(analysis_dataset_institutions_ctgov$start_date >
+              analysis_dataset_institutions_ctgov$registration_date,
             na.rm = T)
 add3 <- round(add2/add1, 3) * 100
 add_wilson <- DescTools::BinomCI(add2, add1, conf.level = 0.95, method = c("wilson", "modified wilson"))
@@ -828,12 +748,12 @@ add_wilson_ul <- round(add_wilson[5], 3) * 100
 institution_statistics_prospective[nrow(institution_statistics_prospective) + 1,] <- list("Total", add1, add2, add3, add_wilson_ll, add_wilson_ul)
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
-## Save table ----
-writexl::write_xlsx(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".xlsx"))
-readr::write_csv(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".csv"))
+#### Save table ----
+#writexl::write_xlsx(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".xlsx"))
+#readr::write_csv(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".csv"))
 
 
-## Figure ----
+### Figure ----
 
 institution_statistics_prospective_fig <- left_join(institution_statistics_prospective, select(
   filter(analysis, !duplicated(lead_institution)), 
@@ -861,11 +781,46 @@ fig <- ggplot(institution_statistics_prospective_fig, aes(
   theme(strip.background = element_blank())+
   coord_flip()
 
-### Save figure ----
+#### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-prospective-", today, ".pdf"), height = 7, width = 7)
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-prospective-", today, ".pdf"), height = 7, width = 7)
 plot(fig)
-dev.off()
+#dev.off()
+
+
+### Kaplan-Meier plot for time to registration ----
+
+#get days to registration (after start) & time in days that one study could be tracked
+analysis_dataset_institutions_ctgov <- mutate(analysis_dataset_institutions_ctgov, days_to_reg = ifelse(days_reg_to_start >= 0, 1, -days_reg_to_start))
+analysis_dataset_institutions_ctgov$has_registration <- 2 #All are "events", none is censored
+
+#Create survival object and fit curve    
+KM_curve_timetoreg <- survival::survfit(survival::Surv(days_to_reg, has_registration) ~ 1, data = analysis_dataset_institutions_ctgov)
+
+#Plot curve
+breaks <- c(1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000)
+labels <- as.character(breaks)
+
+KM_plot_timetoreg <- survfit2(survival::Surv(days_to_reg, has_registration) ~ 1, data = analysis_dataset_institutions_ctgov) %>% 
+  ggsurvfit(linewidth = 0.8) +
+  labs(
+    x = "Days to registration after trial start",
+    y = "Unregistered studies (%)"
+  ) + 
+  add_confidence_interval() +
+  scale_ggsurvfit() +
+  scale_x_continuous(
+    trans = "log",
+    breaks = breaks,
+    labels = labels,
+    limits = c(0.5, 8000)  # Adjusting the limits to include 0.5 to start at 1
+  ) +
+  coord_cartesian(xlim = c(1.5, 8000))
+
+### Save figure ----
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-time-to-reg-", today, ".pdf"), height = 5, width = 7)
+plot(KM_plot_timetoreg)
+#dev.off()
 
 
 
@@ -943,7 +898,7 @@ sens_euctr <- get_primary_results(sens_euctr, sens_euctr$days_to_publ,
 sens_euctr$analysis <- "Restricted to EUCTR"
 
 ### Restrict to only CTgov ----
-sens_ctgov <- filter(analysis_dataset_institutions, !is.na(nct_id))
+sens_ctgov <- filter(analysis_dataset_institutions, is.na(eudract_id))
 
 sens_ctgov <- get_primary_results(sens_ctgov, sens_ctgov$days_to_publ, 
                                   sens_ctgov$days_cd_to_summary, sens_ctgov$has_publ_or_summary)
@@ -965,15 +920,39 @@ sens_completed <- get_primary_results(sens_completed, sens_completed$days_to_pub
                                       sens_completed$days_cd_to_summary, sens_completed$has_publ_or_summary)
 sens_completed$analysis <- "Only completed trials"
 
+
+### Use primary completion date instead of global ----
+sens_primarycompletion <- filter(analysis_dataset_institutions, !is.na(primary_completion_date))
+
+sens_primarycompletion <- sens_primarycompletion %>%
+  mutate(days_to_publ_primarycompletion = pmin(days_pcd_to_publication,   #get minimum of days to pub or to summary result
+                             days_pcd_to_summary, na.rm = TRUE))
+
+sens_primarycompletion <- get_primary_results(sens_primarycompletion, sens_primarycompletion$days_to_publ_primarycompletion, 
+                          sens_primarycompletion$days_pcd_to_summary, sens_primarycompletion$has_publ_or_summary)
+sens_primarycompletion$analysis <- "Primary completion date"
+
+
+
+### Restrict to CTgov-only-registered trials with "actual" global completion date (not "estimated") ----
+sens_ctgov_actual <- filter(analysis_dataset_institutions, is.na(eudract_id) & completion_date_type == "Actual")
+
+sens_ctgov_actual <- get_primary_results(sens_ctgov_actual, sens_ctgov_actual$days_to_publ, 
+                                         sens_ctgov_actual$days_cd_to_summary, sens_ctgov_actual$has_publ_or_summary)
+sens_ctgov_actual$analysis <- "Restricted to ClinicalTrials.gov with actual completion date"
+
+
+
+
 ### Combine rows to matrix ----
 
-sens_matrix <- rbind(sens_main, sens_rcts, sens_euctr, sens_ctgov, sens_known, sens_completed)
+sens_matrix <- rbind(sens_main, sens_rcts, sens_euctr, sens_ctgov, sens_known, sens_completed, sens_primarycompletion, sens_ctgov_actual)
 sens_matrix <- relocate(sens_matrix, analysis)
 
 ### Save sensitivity analysis matrix table ----
 
-writexl::write_xlsx(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".xlsx"))
-readr::write_csv(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".csv"))
+#writexl::write_xlsx(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".xlsx"))
+#readr::write_csv(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".csv"))
 
 
 
@@ -990,8 +969,8 @@ sens_institution_statistics_lead_2y$percentage <- sens_institution_statistics_le
 
 
 #### Save table ----
-writexl::write_xlsx(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".xlsx"))
-readr::write_csv(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".csv"))
+#writexl::write_xlsx(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".xlsx"))
+#readr::write_csv(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".csv"))
 
 
 
@@ -1006,8 +985,8 @@ print(sens_institution_statistics_summary_1y, n = Inf)
 sens_institution_statistics_summary_1y$percentage <- sens_institution_statistics_summary_1y$percentage %>% round(2)
 
 #### Save table ----
-writexl::write_xlsx(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".xlsx"))
-readr::write_csv(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".csv"))
+#writexl::write_xlsx(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".xlsx"))
+#readr::write_csv(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".csv"))
 
 
 ### Any results reporting ----
@@ -1021,8 +1000,8 @@ sens_institution_statistics_any_results$percentage <- sens_institution_statistic
 
 
 #### Save table ----
-writexl::write_xlsx(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".xlsx"))
-readr::write_csv(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".csv"))
+#writexl::write_xlsx(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".xlsx"))
+#readr::write_csv(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".csv"))
 
 
 
@@ -1144,9 +1123,9 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 #### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4)
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4)
 plot(fig)
-dev.off()
+#dev.off()
 
 #### Figure sum 1 yr ----
 
@@ -1170,9 +1149,9 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 #### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".pdf"), height = 4, width = 4)
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".pdf"), height = 4, width = 4)
 plot(fig)
-dev.off()
+#dev.off()
 
 #### Figure any results ----
 
@@ -1196,9 +1175,9 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 ### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4)
+#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4)
 plot(fig)
-dev.off()
+#dev.off()
 
 #Comment: The 3 country figures were edited for esthetics in external software.
 
@@ -1279,10 +1258,91 @@ subgroup_matrix <- rbind(subgroups_country, subgroups_intervention, subgroups_mu
 
 ### Save subgroup analysis matrix table ----
 
-writexl::write_xlsx(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".xlsx"))
-readr::write_csv(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".csv"))
+#writexl::write_xlsx(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".xlsx"))
+#readr::write_csv(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".csv"))
 
 
+### Post-hoc statistical significance tests (console only) ----
+
+#We perform 15 tests and apply a Bonferroni-corrected significance threshold of 0.05/15
+#That is, p-values below 0.0033333 are interpreted as a stat. significant subgroup association
+
+#Country
+subgroups_country$rep_2_yrs_1 <- as.numeric(str_extract(subgroups_country$`Reporting < 2 yrs`, "^[0-9]*"))
+subgroups_country$rep_2_yrs_0 <- as.numeric(str_extract(subgroups_country$`Reporting < 2 yrs`, "(?<=/)\\d+(?=,)")) - subgroups_country$rep_2_yrs_1
+
+subgroups_country$sum_1_yr_1 <- as.numeric(str_extract(subgroups_country$`Summary results < 1 yr`, "^[0-9]*"))
+subgroups_country$sum_1_yr_0 <- as.numeric(str_extract(subgroups_country$`Summary results < 1 yr`, "(?<=/)\\d+(?=,)")) - subgroups_country$sum_1_yr_1
+
+subgroups_country$any_res_1 <- as.numeric(str_extract(subgroups_country$`Any results reporting`, "^[0-9]*"))
+subgroups_country$any_res_0 <- as.numeric(str_extract(subgroups_country$`Any results reporting`, "(?<=/)\\d+(?=,)")) - subgroups_country$any_res_1
+
+#Here using simulated p-value (version of Fisher's exact test) since we have small cell sizes for Iceland:
+chisq.test(select(subgroups_country, rep_2_yrs_0, rep_2_yrs_1), simulate.p.value = T)
+chisq.test(select(subgroups_country, sum_1_yr_0, sum_1_yr_1), simulate.p.value = T)
+chisq.test(select(subgroups_country, any_res_0, any_res_1), simulate.p.value = T) # p<0.05/15
+
+
+#Intervention
+subgroups_intervention$rep_2_yrs_1 <- as.numeric(str_extract(subgroups_intervention$`Reporting < 2 yrs`, "^[0-9]*"))
+subgroups_intervention$rep_2_yrs_0 <- as.numeric(str_extract(subgroups_intervention$`Reporting < 2 yrs`, "(?<=/)\\d+(?=,)")) - subgroups_intervention$rep_2_yrs_1
+
+subgroups_intervention$sum_1_yr_1 <- as.numeric(str_extract(subgroups_intervention$`Summary results < 1 yr`, "^[0-9]*"))
+subgroups_intervention$sum_1_yr_0 <- as.numeric(str_extract(subgroups_intervention$`Summary results < 1 yr`, "(?<=/)\\d+(?=,)")) - subgroups_intervention$sum_1_yr_1
+
+subgroups_intervention$any_res_1 <- as.numeric(str_extract(subgroups_intervention$`Any results reporting`, "^[0-9]*"))
+subgroups_intervention$any_res_0 <- as.numeric(str_extract(subgroups_intervention$`Any results reporting`, "(?<=/)\\d+(?=,)")) - subgroups_intervention$any_res_1
+
+chisq.test(select(subgroups_intervention, rep_2_yrs_0, rep_2_yrs_1))
+chisq.test(select(subgroups_intervention, sum_1_yr_0, sum_1_yr_1)) # p<0.05/15
+chisq.test(select(subgroups_intervention, any_res_0, any_res_1))
+
+
+
+#Multicentric
+subgroups_multicentric$rep_2_yrs_1 <- as.numeric(str_extract(subgroups_multicentric$`Reporting < 2 yrs`, "^[0-9]*"))
+subgroups_multicentric$rep_2_yrs_0 <- as.numeric(str_extract(subgroups_multicentric$`Reporting < 2 yrs`, "(?<=/)\\d+(?=,)")) - subgroups_multicentric$rep_2_yrs_1
+
+subgroups_multicentric$sum_1_yr_1 <- as.numeric(str_extract(subgroups_multicentric$`Summary results < 1 yr`, "^[0-9]*"))
+subgroups_multicentric$sum_1_yr_0 <- as.numeric(str_extract(subgroups_multicentric$`Summary results < 1 yr`, "(?<=/)\\d+(?=,)")) - subgroups_multicentric$sum_1_yr_1
+
+subgroups_multicentric$any_res_1 <- as.numeric(str_extract(subgroups_multicentric$`Any results reporting`, "^[0-9]*"))
+subgroups_multicentric$any_res_0 <- as.numeric(str_extract(subgroups_multicentric$`Any results reporting`, "(?<=/)\\d+(?=,)")) - subgroups_multicentric$any_res_1
+
+chisq.test(select(subgroups_multicentric, rep_2_yrs_0, rep_2_yrs_1))
+chisq.test(select(subgroups_multicentric, sum_1_yr_0, sum_1_yr_1))
+chisq.test(select(subgroups_multicentric, any_res_0, any_res_1))
+
+
+
+#Sponsor type
+subgroups_spons$rep_2_yrs_1 <- as.numeric(str_extract(subgroups_spons$`Reporting < 2 yrs`, "^[0-9]*"))
+subgroups_spons$rep_2_yrs_0 <- as.numeric(str_extract(subgroups_spons$`Reporting < 2 yrs`, "(?<=/)\\d+(?=,)")) - subgroups_spons$rep_2_yrs_1
+
+subgroups_spons$sum_1_yr_1 <- as.numeric(str_extract(subgroups_spons$`Summary results < 1 yr`, "^[0-9]*"))
+subgroups_spons$sum_1_yr_0 <- as.numeric(str_extract(subgroups_spons$`Summary results < 1 yr`, "(?<=/)\\d+(?=,)")) - subgroups_spons$sum_1_yr_1
+
+subgroups_spons$any_res_1 <- as.numeric(str_extract(subgroups_spons$`Any results reporting`, "^[0-9]*"))
+subgroups_spons$any_res_0 <- as.numeric(str_extract(subgroups_spons$`Any results reporting`, "(?<=/)\\d+(?=,)")) - subgroups_spons$any_res_1
+
+chisq.test(select(subgroups_spons, rep_2_yrs_0, rep_2_yrs_1))
+chisq.test(select(subgroups_spons, sum_1_yr_0, sum_1_yr_1), simulate.p.value = T)
+chisq.test(select(subgroups_spons, any_res_0, any_res_1))
+
+
+#Enrollment
+subgroups_enroll$rep_2_yrs_1 <- as.numeric(str_extract(subgroups_enroll$`Reporting < 2 yrs`, "^[0-9]*"))
+subgroups_enroll$rep_2_yrs_0 <- as.numeric(str_extract(subgroups_enroll$`Reporting < 2 yrs`, "(?<=/)\\d+(?=,)")) - subgroups_enroll$rep_2_yrs_1
+
+subgroups_enroll$sum_1_yr_1 <- as.numeric(str_extract(subgroups_enroll$`Summary results < 1 yr`, "^[0-9]*"))
+subgroups_enroll$sum_1_yr_0 <- as.numeric(str_extract(subgroups_enroll$`Summary results < 1 yr`, "(?<=/)\\d+(?=,)")) - subgroups_enroll$sum_1_yr_1
+
+subgroups_enroll$any_res_1 <- as.numeric(str_extract(subgroups_enroll$`Any results reporting`, "^[0-9]*"))
+subgroups_enroll$any_res_0 <- as.numeric(str_extract(subgroups_enroll$`Any results reporting`, "(?<=/)\\d+(?=,)")) - subgroups_enroll$any_res_1
+
+chisq.test(select(subgroups_enroll, rep_2_yrs_0, rep_2_yrs_1)) # p<0.05/15
+chisq.test(select(subgroups_enroll, sum_1_yr_0, sum_1_yr_1))
+chisq.test(select(subgroups_enroll, any_res_0, any_res_1)) # p<0.05/15
 
 
 # 10. Other calculations for paper ----
