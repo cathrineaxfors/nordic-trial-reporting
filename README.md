@@ -27,3 +27,10 @@ NOTE:
 - The file contains the results of the search forms that the reviewers filled out (form_id starting with F followed by a number, e.g., F1, F5977). Since some search forms were deleted as ineligible, the numbering is not consecutive. It also contains the final decisions for inclusion in the original study, i.e., the earliest results publication after solving discrepancies between reviewers (form_id starting with Final followed by a number, i.e., Final1 to Final2113, with consecutive numbering).
 - Only for the earliest results publications for each article have we solved discrepancies between the two independent reviewers. All other articles remain POTENTIALLY eligible as results publications.
 - We did not assess whether publications reported on the trial registrations' primary outcomes.
+
+OTHER REPLICATION MATERIAL
+For the benefit of others who want to create similar projects, we upload the instruction material developed to coordinate the manual publications searches. 
+- Search manual
+- Google Form used to document the search results
+- Discrepancy corrections manual. The spreadsheet Cathrine_A_discrepancies accompanies this manual as an example.
+- Deduplication of cross-registrations manual
