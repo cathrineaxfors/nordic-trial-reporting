@@ -50,7 +50,7 @@ folder_path <- ""
 load(paste0(folder_path, "data/2-data-processing/output-data/", "analysis-2023-11-28.rda"))
 
 #Trial sample
-load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-09.rda"))
+load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-09-corrected-2024-10-01.rda"))
 
 #Publication data
 load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27.rda"))

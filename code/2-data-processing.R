@@ -32,7 +32,7 @@ folder_path <- ""
 ## Load data ----
 
 #Trial sample
-load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-09-corrected-2024-09-30.rda"))
+load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-09-corrected-2024-10-01.rda"))
 nordic_all <- final_trial_sample
 
 #Publication information
@@ -43,10 +43,10 @@ load(paste0(folder_path, "data/1-sample-generation/output-data/", "clintrialsnor
 ctgov <- CTgov_sample
 
 #EUCTR results scraper
-euctr_results <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/", "euctr_data_quality_results_scrape_nov_2022.csv"), encoding = "UTF-8") #results section dataset
+euctr_results <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/euctr-scraper-data-nov-2022/", "euctr_data_quality_results_scrape_nov_2022.csv"), encoding = "UTF-8") #results section dataset
 
 #EUCTR protocol scraper
-euctr_all <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/", "euctr_euctr_dump-2022-11-05-011854.csv"), encoding = "UTF-8") #protocols dataset
+euctr_all <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/euctr-scraper-data-nov-2022/", "euctr_euctr_dump-2022-11-05-011854.csv"), encoding = "UTF-8") #protocols dataset
 
 #Manually verified information regarding cross-registrations and summary results
 load(paste0(folder_path, "data/2-data-processing/", "crossreg-manually-verified-2023-08-09-corrected-2024-09-30.rda"))
