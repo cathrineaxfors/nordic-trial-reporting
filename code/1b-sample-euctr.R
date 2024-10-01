@@ -44,9 +44,9 @@ folder_path <- ""
 
 ## Read in files ----
 
-euctr_all <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/", "euctr_euctr_dump-2022-11-05-011854.csv"), encoding = "UTF-8") #protocols dataset
-euctr_results <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/", "euctr_data_quality_results_scrape_nov_2022.csv"), encoding = "UTF-8") #results section dataset
-euctr_spons <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/", "nov2022_spon_info.csv"), encoding = "UTF-8") #sponsor dataset
+euctr_all <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/euctr-scraper-data-nov-2022/", "euctr_euctr_dump-2022-11-05-011854.csv"), encoding = "UTF-8") #protocols dataset
+euctr_results <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/euctr-scraper-data-nov-2022/", "euctr_data_quality_results_scrape_nov_2022.csv"), encoding = "UTF-8") #results section dataset
+euctr_spons <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/euctr-scraper-data-nov-2022/", "nov2022_spon_info.csv"), encoding = "UTF-8") #sponsor dataset
 eutt <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/", "trials-2022-11-07.csv"), encoding = "UTF-8") #EUTT trials dataset, data from 2022-11-07
 
 #Run script 1a-sample-ctgov.R to generate CTgov_sample_save
