@@ -40,7 +40,7 @@ today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-09)
 
 ## Folder path ----
 #Enter here the path to the folder where you saved the "data" and "code" folders (see our GitHub)
-folder_path <- "C:/Users/catax386/Documents/Forskning/Egna studier/Postdoc METRICS/clinical trials dashboard/final-share/"
+folder_path <- ""
 
 ## Read in files ----
 
