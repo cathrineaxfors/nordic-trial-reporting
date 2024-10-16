@@ -21,7 +21,7 @@ library(lubridate)
 
 # Hard code preparations ----
 
-today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-28)
+today <- "2023-11-28" #Enter today's date YYYY-MM-DD (our date: 2023-11-28)
 
 
 ## Folder path ----
@@ -36,7 +36,7 @@ load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-
 nordic_all <- final_trial_sample
 
 #Publication information
-load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27.rda"))
+load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27-corrected-2024-10-16.rda"))
 
 #Full dataset from CTgov
 load(paste0(folder_path, "data/1-sample-generation/output-data/", "clintrialsnord_CTgov_full-2023-11-09.rda"))
@@ -49,7 +49,7 @@ euctr_results <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data
 euctr_all <- read.csv(paste0(folder_path, "data/1-sample-generation/raw-data/euctr-scraper-data-nov-2022/", "euctr_euctr_dump-2022-11-05-011854.csv"), encoding = "UTF-8") #protocols dataset
 
 #Manually verified information regarding cross-registrations and summary results
-load(paste0(folder_path, "data/2-data-processing/", "crossreg-manually-verified-2023-08-09-corrected-2024-09-30.rda"))
+load(paste0(folder_path, "data/2-data-processing/", "crossreg-manually-verified-2023-08-09-corrected-2024-10-16.rda"))
 
 
 # Merge trial and publication data ----
@@ -566,11 +566,15 @@ nordic_all <- mutate(nordic_all,
 
 nordic_all <- select(nordic_all, !matches("\\.x|\\.y"))
 
-# Separate imputation of manually verified variables for 1 record
+# Separate imputation of manually verified variables for 2 records
 
 nordic_all <- mutate(nordic_all, 
     has_summary_results = ifelse(proj_id == "2474", "No", has_summary_results),
     summary_results_date = ifelse(proj_id == "2474", NA, summary_results_date))
+
+
+nordic_all <- mutate(nordic_all, intervention_type = ifelse(proj_id == "967", "Medicinal product", intervention_type))
+
 
 
 # Calculate time-to variables ----
@@ -653,3 +657,4 @@ analysis <- filter(analysis, eligibility == "Eligible")
 save(analysis, file = paste0(folder_path, "data/2-data-processing/output-data/", "analysis-", today, ".rda"))
 write.csv(analysis, file = paste0(folder_path, "data/2-data-processing/output-data/", "analysis-", today, ".csv"))
 writexl::write_xlsx(analysis, paste0(folder_path, "data/2-data-processing/output-data/", "analysis-", today, ".xlsx"))
+

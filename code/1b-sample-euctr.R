@@ -36,7 +36,7 @@ library(lubridate)
 
 #Note: The script "1a-sample-ctgov.R" should be run before this script.
 
-today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-09)
+today <- "2023-11-09" #Enter today's date YYYY-MM-DD (our date: 2023-11-09)
 
 ## Folder path ----
 #Enter here the path to the folder where you saved the "data" and "code" folders (see our GitHub)
@@ -259,3 +259,4 @@ save(nordic_all, file=paste0(folder_path, "data/1-sample-generation/output-data/
 
 
 ### END ###
+

@@ -36,7 +36,7 @@ library(RColorBrewer)
 
 # Hard code preparations ----
 
-today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-28)
+today <- "2023-11-28" #Enter today's date YYYY-MM-DD (our date: 2023-11-28)
 
 
 ## Folder path ----
@@ -47,13 +47,13 @@ folder_path <- ""
 ## Load data ----
 
 #Analysis set
-load(paste0(folder_path, "data/2-data-processing/output-data/", "analysis-2023-11-28.rda"))
+load(paste0(folder_path, "data/2-data-processing/output-data/", "analysis-", today, ".rda"))
 
 #Trial sample
 load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-09-corrected-2024-10-01.rda"))
 
 #Publication data
-load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27.rda"))
+load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27-corrected-2024-10-16.rda"))
 
 
 

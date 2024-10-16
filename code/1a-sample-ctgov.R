@@ -34,7 +34,7 @@ folder_path <- ""
 #Search terms for institutions
 city_search_terms <- readxl::read_xlsx(paste0(folder_path, "data/1-sample-generation/", "city_search_terms_nordic-2022-11-29.xlsx"))
 
-today <- "" #Enter today's date YYYY-MM-DD (our date: 2023-11-09)
+today <- "2023-11-09" #Enter today's date YYYY-MM-DD (our date: 2023-11-09)
 
 
 # Load packages ----
@@ -330,3 +330,4 @@ save(CTgov_sample_save, file=paste0(folder_path, "data/1-sample-generation/outpu
 save(CTgov_sample, file=paste0(folder_path, "data/1-sample-generation/output-data/", "clintrialsnord_CTgov_full-", today, ".rda"))
 
 ### END ###
+
