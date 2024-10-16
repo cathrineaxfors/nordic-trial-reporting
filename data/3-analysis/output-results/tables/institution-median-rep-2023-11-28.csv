@@ -9,7 +9,7 @@ Copenhagen University Hospital,722,1156.5000000000002
 Danderyd Hospital,863,776.0000000000001
 Gothenburg University,677.9999999999999,486.9999999999999
 Haukeland university hospital,1799,NA
-Helsinki University Hospital,640,602
+Helsinki University Hospital,636,602
 Herlev and Gentofte Hospital,739.0000000000001,1475.9999999999998
 Holbæk Hospital,565,707
 Hvidovre and Amager Hospital,556,836.9999999999999
@@ -24,6 +24,8 @@ Næstved Hospital,607,275.0000000000001
 Nordsjællands Hospital,824,619.0000000000001
 Norwegian University of Science and Technology,892,1475.5
 Odense University Hospital,571.0000000000001,887
+Örebro University,981,917
+Örebro University Hospital,182,0
 Oslo University Hospital,740,1057
 Oulu University Hospital,1213,NA
 Sahlgrenska University Hospital,867,1201
@@ -51,11 +53,9 @@ University of Turku,759,1194.5
 Uppsala Academic Hospital,948.9999999999999,594.9999999999999
 Uppsala University,971,NA
 Zealand University Hospital,593.5,541.5
-Örebro University,981,917
-Örebro University Hospital,182,0
 Denmark,623.9999999999999,932.9999999999998
-Finland,723,1507.9999999999998
+Finland,720,1507.9999999999998
 Iceland,1149,849.9999999999999
 Norway,827,NA
 Sweden,735.9999999999999,1217.0000000000005
-Total,698,1123
+Total,697.5000000000001,1123.5

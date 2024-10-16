@@ -24,6 +24,8 @@ Næstved Hospital,4,3,75,30.099999999999998,98.7
 Nordsjællands Hospital,4,3,75,30.099999999999998,98.7
 Norwegian University of Science and Technology,69,45,65.2,53.400000000000006,75.4
 Odense University Hospital,64,38,59.4,47.099999999999994,70.5
+Örebro University,16,1,6.2,0.3,28.299999999999997
+Örebro University Hospital,0,0,NA,NA,NA
 Oslo University Hospital,87,49,56.3,45.9,66.3
 Oulu University Hospital,5,1,20,1,62.4
 Sahlgrenska University Hospital,34,13,38.2,23.9,55.00000000000001
@@ -51,6 +53,4 @@ University of Turku,16,7,43.8,23.1,66.8
 Uppsala Academic Hospital,6,1,16.7,0.8999999999999999,56.39999999999999
 Uppsala University,41,18,43.9,29.9,59
 Zealand University Hospital,14,8,57.1,32.6,78.60000000000001
-Örebro University,16,1,6.2,0.3,28.299999999999997
-Örebro University Hospital,0,0,NA,NA,NA
 Total,1681,856,50.9,48.5,53.300000000000004

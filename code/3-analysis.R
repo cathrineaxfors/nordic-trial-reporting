@@ -129,8 +129,8 @@ demo_table_save <- furniture::table1(analysis, lead_country, registered_euctr, r
 #working directory (you'll need to define the working directory first).
 #You can also just copy the table content from the console into a word file.
 
-#save(demo_table_save, file = paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-", 
-#                             today, ".rData"))
+save(demo_table_save, file = paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-", 
+                             today, ".rData"))
 
 ### Create and save table (per registry) ----
 demo_table_reg_save <- furniture::table1(analysis, lead_country, registered_euctr, registered_ctgov,intervention_type, 
@@ -141,8 +141,8 @@ demo_table_reg_save <- furniture::table1(analysis, lead_country, registered_euct
 #working directory (you'll need to define the working directory first).
 #You can also just copy the table content from the console into a word file.
 
-#save(demo_table_reg_save, file = paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-registry-", 
-#                             today, ".rData"))
+save(demo_table_reg_save, file = paste0(folder_path, "data/3-analysis/output-results/tables/", "demographics-table-registry-", 
+                             today, ".rData"))
 
 
 # 3. Timely publication 2 years ----

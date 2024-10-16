@@ -9,7 +9,7 @@ Copenhagen University Hospital,172,2,1.2,0.2,4.1000000000000005
 Danderyd Hospital,7,0,0,0,35.4
 Gothenburg University,24,1,4.2,0.2,20.200000000000003
 Haukeland university hospital,30,0,0,0,11.4
-Helsinki University Hospital,47,2,4.3,0.8,14.2
+Helsinki University Hospital,46,2,4.3,0.8,14.499999999999998
 Herlev and Gentofte Hospital,111,4,3.6,1.4000000000000001,8.9
 Holbæk Hospital,3,0,0,0,56.10000000000001
 Hvidovre and Amager Hospital,51,1,2,0.1,10.299999999999999
@@ -24,6 +24,8 @@ Næstved Hospital,5,0,0,0,43.4
 Nordsjællands Hospital,10,1,10,0.5,40.400000000000006
 Norwegian University of Science and Technology,76,0,0,0,4.8
 Odense University Hospital,91,5,5.5,2.4,12.2
+Örebro University,17,0,0,0,18.4
+Örebro University Hospital,1,0,0,0,94.89999999999999
 Oslo University Hospital,102,1,1,0.1,5.3
 Oulu University Hospital,10,0,0,0,27.800000000000004
 Sahlgrenska University Hospital,40,0,0,0,8.799999999999999
@@ -51,5 +53,3 @@ University of Turku,20,0,0,0,16.1
 Uppsala Academic Hospital,9,0,0,0,29.9
 Uppsala University,51,1,2,0.1,10.299999999999999
 Zealand University Hospital,28,0,0,0,12.1
-Örebro University,17,0,0,0,18.4
-Örebro University Hospital,1,0,0,0,94.89999999999999

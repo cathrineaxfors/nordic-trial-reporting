@@ -6,3 +6,4 @@ data/1-sample-generation/raw-data/*
 .Rproj.user
 .Rhistory
 *.Rproj
+.RData
