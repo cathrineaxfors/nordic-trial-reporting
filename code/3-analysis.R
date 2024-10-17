@@ -233,8 +233,8 @@ institution_statistics_lead_2y[nrow(institution_statistics_lead_2y) + 1,] <- lis
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
 ## Save table ----
-#writexl::write_xlsx(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".xlsx"))
-#readr::write_csv(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".csv"))
+writexl::write_xlsx(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".xlsx"))
+readr::write_csv(institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-2years-", today, ".csv"))
 
 
 ## Figure ----
@@ -267,9 +267,11 @@ fig <- ggplot(institution_statistics_lead_2y_fig, aes(
 
 ### Save figure ----
 
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".svg"), height = 7, width = 7)
+
 plot(fig)
-#dev.off()
+dev.off()
 
 
 
@@ -340,8 +342,8 @@ institution_statistics_summary_1y[nrow(institution_statistics_summary_1y) + 1,] 
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
 ## Save table ----
-#writexl::write_xlsx(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".xlsx"))
-#readr::write_csv(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".csv"))
+writexl::write_xlsx(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".xlsx"))
+readr::write_csv(institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-summary-1year-", today, ".csv"))
 
 
 ## Figure ----
@@ -374,9 +376,9 @@ fig <- ggplot(institution_statistics_summary_1y_fig, aes(
 
 ### Save figure ----
 
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-summary-1yr-", today, ".pdf"), height = 7, width = 7)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-summary-1yr-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
 plot(fig)
-#dev.off()
+dev.off()
 
 
 ## In-text results (console only) ----
@@ -456,8 +458,8 @@ institution_statistics_any_results[nrow(institution_statistics_any_results) + 1,
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
 ## Save table ----
-#writexl::write_xlsx(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".xlsx"))
-#readr::write_csv(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".csv"))
+writexl::write_xlsx(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".xlsx"))
+readr::write_csv(institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-stats-anyreport-", today, ".csv"))
 
 
 ## Figure ----
@@ -490,9 +492,10 @@ fig <- ggplot(institution_statistics_any_results_fig, aes(
 
 ### Save figure ----
 
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".svg"), height = 7, width = 7)
 plot(fig)
-#dev.off()
+dev.off()
 
 
 
@@ -544,9 +547,9 @@ KM_curve_total <- survfit2(survival::Surv(months_obs, has_publ_or_summary) ~ 1, 
 
 
 ### Save figure ----
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-", today, ".pdf"), height = 4, width = 5)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-", today, ".pdf"), height = 4, width = 5, encoding = "WinAnsi.enc")
 plot(KM_curve_total)
-#dev.off()
+dev.off()
 
 
 ### Per country ----
@@ -573,9 +576,9 @@ KM_curve_country <- survfit2(survival::Surv(months_obs, has_publ_or_summary) ~ l
 
 
 #### Save figure ----
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-country-", today, ".pdf"), height = 4, width = 5.5)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-country-", today, ".pdf"), height = 4, width = 5.5, encoding = "WinAnsi.enc")
 plot(KM_curve_country)
-#dev.off()
+dev.off()
 
 
 ## Median time to reporting ----
@@ -640,15 +643,15 @@ institution_median_reporting[nrow(institution_median_reporting) + 1,] <- list("T
 rm(add1, add2)
 
 ## Save table ----
-#writexl::write_xlsx(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".xlsx"))
-#readr::write_csv(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".csv"))
+writexl::write_xlsx(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".xlsx"))
+readr::write_csv(institution_median_reporting, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-median-rep-", today, ".csv"))
 
 
 ## Additional calculations (console only) ----
 
 # Number of trials with any results reporting before completion date
 sum(analysis_dataset_institutions$days_to_publ<0, na.rm = T)
-sum(analysis_dataset_institutions$days_to_publ<0, na.rm = T)/2113
+sum(analysis_dataset_institutions$days_to_publ<0, na.rm = T)/nrow(analysis)
 
 
 # 7. Secondary outcomes ----
@@ -749,8 +752,8 @@ institution_statistics_prospective[nrow(institution_statistics_prospective) + 1,
 rm(add1, add2, add3, add_wilson_ll, add_wilson_ul)
 
 #### Save table ----
-#writexl::write_xlsx(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".xlsx"))
-#readr::write_csv(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".csv"))
+writexl::write_xlsx(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".xlsx"))
+readr::write_csv(institution_statistics_prospective, paste0(folder_path, "data/3-analysis/output-results/tables/", "institution-prospective-", today, ".csv"))
 
 
 ### Figure ----
@@ -783,9 +786,9 @@ fig <- ggplot(institution_statistics_prospective_fig, aes(
 
 #### Save figure ----
 
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-prospective-", today, ".pdf"), height = 7, width = 7)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-prospective-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
 plot(fig)
-#dev.off()
+dev.off()
 
 
 ### Kaplan-Meier plot for time to registration ----
@@ -818,9 +821,9 @@ KM_plot_timetoreg <- survfit2(survival::Surv(days_to_reg, has_registration) ~ 1,
   coord_cartesian(xlim = c(1.5, 8000))
 
 ### Save figure ----
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-time-to-reg-", today, ".pdf"), height = 5, width = 7)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "kaplan-meier-time-to-reg-", today, ".pdf"), height = 5, width = 7, encoding = "WinAnsi.enc")
 plot(KM_plot_timetoreg)
-#dev.off()
+dev.off()
 
 
 
@@ -951,8 +954,8 @@ sens_matrix <- relocate(sens_matrix, analysis)
 
 ### Save sensitivity analysis matrix table ----
 
-#writexl::write_xlsx(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".xlsx"))
-#readr::write_csv(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".csv"))
+writexl::write_xlsx(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".xlsx"))
+readr::write_csv(sens_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-matrix-", today, ".csv"))
 
 
 
@@ -969,8 +972,8 @@ sens_institution_statistics_lead_2y$percentage <- sens_institution_statistics_le
 
 
 #### Save table ----
-#writexl::write_xlsx(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".xlsx"))
-#readr::write_csv(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".csv"))
+writexl::write_xlsx(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".xlsx"))
+readr::write_csv(sens_institution_statistics_lead_2y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-2years-", today, ".csv"))
 
 
 
@@ -985,8 +988,8 @@ print(sens_institution_statistics_summary_1y, n = Inf)
 sens_institution_statistics_summary_1y$percentage <- sens_institution_statistics_summary_1y$percentage %>% round(2)
 
 #### Save table ----
-#writexl::write_xlsx(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".xlsx"))
-#readr::write_csv(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".csv"))
+writexl::write_xlsx(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".xlsx"))
+readr::write_csv(sens_institution_statistics_summary_1y, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-summary-1year-", today, ".csv"))
 
 
 ### Any results reporting ----
@@ -1000,8 +1003,8 @@ sens_institution_statistics_any_results$percentage <- sens_institution_statistic
 
 
 #### Save table ----
-#writexl::write_xlsx(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".xlsx"))
-#readr::write_csv(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".csv"))
+writexl::write_xlsx(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".xlsx"))
+readr::write_csv(sens_institution_statistics_any_results, paste0(folder_path, "data/3-analysis/output-results/tables/", "sens-single-sponsor-institution-stats-anyreport-", today, ".csv"))
 
 
 
@@ -1123,9 +1126,11 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 #### Save figure ----
 
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".svg"), height = 4, width = 4)
+
 plot(fig)
-#dev.off()
+dev.off()
 
 #### Figure sum 1 yr ----
 
@@ -1149,9 +1154,11 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 #### Save figure ----
 
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".pdf"), height = 4, width = 4)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".svg"), height = 4, width = 4)
+
 plot(fig)
-#dev.off()
+dev.off()
 
 #### Figure any results ----
 
@@ -1175,9 +1182,11 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 ### Save figure ----
 
-#pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, "svg"), height = 4, width = 4)
+
 plot(fig)
-#dev.off()
+dev.off()
 
 #Comment: The 3 country figures were edited for esthetics in external software.
 
@@ -1258,8 +1267,8 @@ subgroup_matrix <- rbind(subgroups_country, subgroups_intervention, subgroups_mu
 
 ### Save subgroup analysis matrix table ----
 
-#writexl::write_xlsx(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".xlsx"))
-#readr::write_csv(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".csv"))
+writexl::write_xlsx(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".xlsx"))
+readr::write_csv(subgroup_matrix, paste0(folder_path, "data/3-analysis/output-results/tables/", "subgroup-matrix-", today, ".csv"))
 
 
 ### Post-hoc statistical significance tests (console only) ----
