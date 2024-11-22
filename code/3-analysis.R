@@ -56,6 +56,7 @@ load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-
 load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27-corrected-2024-10-16.rda"))
 
 
+susp_trials <- analysis %>% filter(proj_id == "1985" | proj_id == "512" | proj_id == "2399" | proj_id == "1621" | proj_id == "2071" | proj_id == "1223" )
 
 
 # 1. Search flowchart (in console only) ----
@@ -71,8 +72,6 @@ final_sample_crossreg_duplicates <- filter(final_trial_sample, eligibility == "C
 summary(as.factor(final_sample_crossreg_duplicates$crossregistration_check))
 
 summary(as.factor(final_trial_sample$eligibility))
-
-
 
 # 2. Demographics table ----
 
@@ -267,8 +266,8 @@ fig <- ggplot(institution_statistics_lead_2y_fig, aes(
 
 ### Save figure ----
 
-# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
-svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".svg"), height = 7, width = 7)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
+# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".svg"), height = 7, width = 7)
 
 plot(fig)
 dev.off()
@@ -492,8 +491,8 @@ fig <- ggplot(institution_statistics_any_results_fig, aes(
 
 ### Save figure ----
 
-# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
-svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".svg"), height = 7, width = 7)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
+# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".svg"), height = 7, width = 7)
 plot(fig)
 dev.off()
 
@@ -1126,8 +1125,8 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 #### Save figure ----
 
-# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
-svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".svg"), height = 4, width = 4)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".svg"), height = 4, width = 4)
 
 plot(fig)
 dev.off()
@@ -1155,7 +1154,7 @@ fig <- ggplot(subgroups_country_fig, aes(
 #### Save figure ----
 
 pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
-svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".svg"), height = 4, width = 4)
+# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".svg"), height = 4, width = 4)
 
 plot(fig)
 dev.off()
@@ -1182,8 +1181,8 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 ### Save figure ----
 
-# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
-svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, "svg"), height = 4, width = 4)
+pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".svg"), height = 4, width = 4)
 
 plot(fig)
 dev.off()
