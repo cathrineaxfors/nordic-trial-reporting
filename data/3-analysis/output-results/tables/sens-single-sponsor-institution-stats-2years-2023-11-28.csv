@@ -1,7 +1,7 @@
 institution,trials,publ_within_24m_after_CD,percentage,conf_int_ll,conf_int_ul
 Aalborg University,31,20,64.5,46.9,78.9
-Aalborg University Hospital,35,17,48.6,33,64.4
-Aarhus University,186,112,60.2,53,67
+Aalborg University Hospital,35,19,54.3,38.2,69.5
+Aarhus University,186,113,60.8,53.6,67.5
 Aarhus University Hospital,64,38,59.4,47.099999999999994,70.5
 Akershus University Hospital,11,5,45.5,21.3,72
 Bispebjerg and Frederiksberg Hospital,77,45,58.4,47.3,68.8
@@ -41,14 +41,14 @@ Umeå University,41,19,46.3,32.1,61.3
 University Hospital of North Norway,17,6,35.3,17.299999999999997,58.699999999999996
 University Hospital of Umeå,2,1,50,2.6,97.39999999999999
 University of Bergen,31,16,51.6,34.8,68
-University of Copenhagen,97,42,43.3,33.900000000000006,53.2
+University of Copenhagen,97,43,44.3,34.8,54.2
 University of Eastern Finland,12,2,16.7,3,44.800000000000004
 University of Helsinki,21,11,52.4,32.4,71.7
 University of Iceland,5,2,40,7.1,76.9
 University of Oslo,23,15,65.2,44.9,81.2
 University of Oulu,25,10,40,23.400000000000002,59.3
 University of Southern Denmark,42,27,64.3,49.2,77
-University of Tampere,9,5,55.6,26.700000000000003,81.10000000000001
+University of Tampere,9,6,66.7,35.4,87.9
 University of Turku,20,10,50,29.9,70.1
 Uppsala Academic Hospital,9,3,33.3,12.1,64.60000000000001
 Uppsala University,51,22,43.1,30.5,56.699999999999996

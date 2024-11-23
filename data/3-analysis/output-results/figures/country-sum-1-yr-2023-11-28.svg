@@ -39,21 +39,21 @@
 </defs>
 <g clip-path='url(#cpNDYuMTF8MTgyLjk3fDk2LjY2fDE2NS4wOQ==)'>
 <rect x='46.11' y='96.66' width='136.86' height='68.43' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
-<line x1='54.20' y1='144.03' x2='56.56' y2='144.03' style='stroke-width: 1.07; stroke: #E41A1C; stroke-linecap: butt;' />
+<line x1='54.69' y1='157.19' x2='57.18' y2='157.19' style='stroke-width: 1.07; stroke: #E41A1C; stroke-linecap: butt;' />
 <line x1='53.45' y1='130.87' x2='58.55' y2='130.87' style='stroke-width: 1.07; stroke: #377EB8; stroke-linecap: butt;' />
 <line x1='52.33' y1='104.55' x2='86.92' y2='104.55' style='stroke-width: 1.07; stroke: #4DAF4A; stroke-linecap: butt;' />
 <line x1='52.45' y1='117.71' x2='54.44' y2='117.71' style='stroke-width: 1.07; stroke: #984EA3; stroke-linecap: butt;' />
-<line x1='54.20' y1='157.19' x2='57.56' y2='157.19' style='stroke-width: 1.07; stroke: #FF7F00; stroke-linecap: butt;' />
-<circle cx='55.19' cy='144.03' r='5.69' style='stroke-width: 0.71; fill: #E41A1C;' />
+<line x1='54.32' y1='144.03' x2='57.80' y2='144.03' style='stroke-width: 1.07; stroke: #FF7F00; stroke-linecap: butt;' />
+<circle cx='55.69' cy='157.19' r='5.69' style='stroke-width: 0.71; fill: #E41A1C;' />
 <circle cx='55.07' cy='130.87' r='3.41' style='stroke-width: 0.71; fill: #377EB8;' />
 <circle cx='52.33' cy='104.55' r='1.42' style='stroke-width: 0.71; fill: #4DAF4A;' />
 <circle cx='52.70' cy='117.71' r='3.82' style='stroke-width: 0.71; fill: #984EA3;' />
-<circle cx='55.44' cy='157.19' r='4.47' style='stroke-width: 0.71; fill: #FF7F00;' />
+<circle cx='55.69' cy='144.03' r='4.47' style='stroke-width: 0.71; fill: #FF7F00;' />
 <rect x='46.11' y='96.66' width='136.86' height='68.43' style='stroke-width: 1.07; stroke: #333333;' />
 </g>
 <g clip-path='url(#cpMC4wMHwyODguMDB8MC4wMHwyODguMDA=)'>
-<text x='41.18' y='160.35' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='31.80px' lengthAdjust='spacingAndGlyphs'>Sweden</text>
-<text x='41.18' y='147.19' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='35.70px' lengthAdjust='spacingAndGlyphs'>Denmark</text>
+<text x='41.18' y='160.35' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='35.70px' lengthAdjust='spacingAndGlyphs'>Denmark</text>
+<text x='41.18' y='147.19' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='31.80px' lengthAdjust='spacingAndGlyphs'>Sweden</text>
 <text x='41.18' y='134.03' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='28.86px' lengthAdjust='spacingAndGlyphs'>Finland</text>
 <text x='41.18' y='120.87' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='29.82px' lengthAdjust='spacingAndGlyphs'>Norway</text>
 <text x='41.18' y='107.71' text-anchor='end' style='font-size: 8.80px;fill: #4D4D4D; font-family: "Arial";' textLength='28.38px' lengthAdjust='spacingAndGlyphs'>Iceland</text>

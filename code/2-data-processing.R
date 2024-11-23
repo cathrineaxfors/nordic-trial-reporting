@@ -35,8 +35,6 @@ folder_path <- ""
 load(paste0(folder_path, "data/2-data-processing/", "final-trial-sample-2023-11-09-corrected-2024-10-01.rda"))
 nordic_all <- final_trial_sample
 
-susp_trials <- nordic_all %>% filter(proj_id == "1985" | proj_id == "512" | proj_id == "2399" | proj_id == "1621" | proj_id == "2071" | proj_id == "1223" )
-
 #Publication information
 load(paste0(folder_path, "data/2-data-processing/", "publication-information-merged-2023-11-27-corrected-2024-10-16.rda"))
 
@@ -554,11 +552,7 @@ nordic_all <- mutate(nordic_all,
     center_size = if_else((grepl("identified", crossregistration_check, ignore.case = TRUE) & !proj_id=="2474"), center_size.y, center_size.x)
   )
 
-susp_trials <- nordic_all%>% filter(proj_id == "1985" | proj_id == "512" | proj_id == "2399" | proj_id == "1621" | proj_id == "2071" | proj_id == "1223" )
-
 # Manually verified presence of summary results and trial dates (start, completion) from that section
-
-susp_trials_2 <- nordic_all %>% filter(grepl("2474|2514|2522|2549|2571|2577|2582|2586", proj_id))
 
 nordic_all <- mutate(nordic_all,
     start_date = if_else((has_summary_results.x == "Yes" & !grepl("2474|2514|2522|2549|2571|2577|2582|2586", proj_id)), start_date.y, start_date),
@@ -568,12 +562,14 @@ nordic_all <- mutate(nordic_all,
     primary_completion_date = if_else((has_summary_results.x == "Yes" & !grepl("2474|2514|2522|2549|2571|2577|2582|2586", proj_id)), primary_completion_date.y, primary_completion_date)
 )
 
-susp_trials <- nordic_all%>% filter(proj_id == "1985" | proj_id == "512" | proj_id == "2399" | proj_id == "1621" | proj_id == "2071" | proj_id == "1223" )
+# This trial has wrong completion_date coded in the crossreg file but the correct in the automatically extracted data. This fixes that. 
+nordic_all <- nordic_all %>% mutate(completion_date = ifelse(proj_id == 2329, completion_date.x, completion_date))
 
+
+# Remove merge columns
 nordic_all <- select(nordic_all, !matches("\\.x|\\.y"))
 
 # Separate imputation of manually verified variables for 2 records
-
 nordic_all <- mutate(nordic_all, 
     has_summary_results = ifelse(proj_id == "2474", "No", has_summary_results),
     summary_results_date = ifelse(proj_id == "2474", NA, summary_results_date))
@@ -663,3 +659,4 @@ analysis <- filter(analysis, eligibility == "Eligible")
 save(analysis, file = paste0(folder_path, "data/2-data-processing/output-data/", "analysis-", today, ".rda"))
 write.csv(analysis, file = paste0(folder_path, "data/2-data-processing/output-data/", "analysis-", today, ".csv"))
 writexl::write_xlsx(analysis, paste0(folder_path, "data/2-data-processing/output-data/", "analysis-", today, ".xlsx"))
+

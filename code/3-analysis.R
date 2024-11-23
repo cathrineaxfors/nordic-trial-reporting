@@ -266,8 +266,8 @@ fig <- ggplot(institution_statistics_lead_2y_fig, aes(
 
 ### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
-# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".svg"), height = 7, width = 7)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-2y-", today, ".svg"), height = 7, width = 7)
 
 plot(fig)
 dev.off()
@@ -491,8 +491,8 @@ fig <- ggplot(institution_statistics_any_results_fig, aes(
 
 ### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
-# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".svg"), height = 7, width = 7)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".pdf"), height = 7, width = 7, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "figure-inst-anyresults-", today, ".svg"), height = 7, width = 7)
 plot(fig)
 dev.off()
 
@@ -510,11 +510,12 @@ analysis_KM_data <- mutate(analysis_KM_data, days_to_publ = ifelse(days_to_publ 
 
 analysis_KM_data <- mutate(analysis_KM_data, months_obs = case_when(
   has_publ_or_summary == T ~ days_to_publ/365.25*12,
-  has_publ_or_summary == F ~ as.duration(completion_date %--% extraction_date_latest) / dmonths(1)))
-
+  has_publ_or_summary == F ~ as.duration(completion_date %--% extraction_date_latest) / dmonths(1))) 
 
 #Create survival object and fit curve    
 KM_curve <- survival::survfit(survival::Surv(months_obs, has_publ_or_summary) ~ 1, data = analysis_KM_data)
+
+old_trials <- analysis_KM_data %>% filter(months_obs > 84)
 
 #Plot curve
 xbreaks <- c(12, 24, 36, 48, 60, 72, 84)
@@ -533,7 +534,7 @@ KM_curve_total <- survfit2(survival::Surv(months_obs, has_publ_or_summary) ~ 1, 
   scale_x_continuous(
     breaks = xbreaks,
     labels = xlabels,
-    limits = c(1, 88),
+    limits = c(1, 84),
     expand = c(0,0)) +
   scale_y_continuous(
     breaks = ybreaks,
@@ -1125,8 +1126,8 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 #### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
-# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".svg"), height = 4, width = 4)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-rep-2-yrs-", today, ".svg"), height = 4, width = 4)
 
 plot(fig)
 dev.off()
@@ -1153,8 +1154,8 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 #### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
-# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".svg"), height = 4, width = 4)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-sum-1-yr-", today, ".svg"), height = 4, width = 4)
 
 plot(fig)
 dev.off()
@@ -1181,8 +1182,8 @@ fig <- ggplot(subgroups_country_fig, aes(
 
 ### Save figure ----
 
-pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
-# svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".svg"), height = 4, width = 4)
+# pdf(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".pdf"), height = 4, width = 4, encoding = "WinAnsi.enc")
+svglite(paste0(folder_path, "data/3-analysis/output-results/figures/", "country-any-results-", today, ".svg"), height = 4, width = 4)
 
 plot(fig)
 dev.off()
@@ -1398,4 +1399,5 @@ print(paste0("Publication within 24 month as journal publication only: ", timely
              " - as summary result only: ", timely_sum_num,
              " - as both journal publication and summary result: ", timely_pub_and_sum_num,
              " - as other publication type: ", timely_other_num))
+
 
